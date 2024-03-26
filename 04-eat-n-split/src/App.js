@@ -63,7 +63,9 @@ export default function App() {
         {showAddFriend && <FormAddFriend onHandleAddFriend={handleAddFriend} />}
         <Button onClick={handleShowAddFreind}>{showAddFriend ? 'Close' : 'Add Friend'}</Button>
       </div>
-      {selectedFriend && <FormSplitBill selectedFriend={selectedFriend} onHandleSplitBill={handleSplitBill} />}
+      {selectedFriend && (
+        <FormSplitBill key={selectedFriend.id} selectedFriend={selectedFriend} onHandleSplitBill={handleSplitBill} />
+      )}
     </div>
   );
 }
