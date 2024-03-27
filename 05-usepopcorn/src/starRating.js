@@ -47,7 +47,7 @@ export default function StarRating({
     <div style={containerStyle} className={className}>
       <div style={starContainerStyle}>
         {Array.from({ length: maxRating }, (_, i) => (
-          <span>
+          <span key={i}>
             <Star
               key={i}
               full={tempRating ? tempRating >= i + 1 : rating >= i + 1}

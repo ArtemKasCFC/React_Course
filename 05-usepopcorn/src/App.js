@@ -75,17 +75,20 @@ export default function App() {
 
   useEffect(
     function () {
+      const controller = new AbortController();
+
       async function fetchMovies() {
         try {
           setError(error => '');
           setIsLoading(true);
-          const res = await fetch(`http://www.omdbapi.com/?apikey=${apiKey}&s=${query}`);
+          const res = await fetch(`http://www.omdbapi.com/?apikey=${apiKey}&s=${query}`, { signal: controller.signal });
           if (!res.ok) throw new Error('Something went wrong with fetching movies');
           const data = await res.json();
           if (data.Response === 'False') throw new Error(data.Error);
           setMovies(movies => data.Search);
+          setError(error => '');
         } catch (err) {
-          setError(error => err.message);
+          if (err.name !== 'AbortError') setError(error => err.message);
         } finally {
           setIsLoading(false);
         }
@@ -96,7 +99,13 @@ export default function App() {
         setError(error => '');
         return;
       }
+
+      handleCloseMovieDetails();
       fetchMovies();
+
+      return function () {
+        controller.abort();
+      };
     },
     [query]
   );
@@ -264,6 +273,20 @@ function MovieDetails({ selectedID, onCloseDetails, onAddWatched, watched }) {
 
   useEffect(
     function () {
+      function callback(e) {
+        if (e.code === 'Escape') onCloseDetails();
+      }
+      document.addEventListener('keydown', callback);
+
+      return function () {
+        document.removeEventListener('keydown', callback);
+      };
+    },
+    [onCloseDetails]
+  );
+
+  useEffect(
+    function () {
       async function getMovieDetails() {
         setIsLoading(true);
         const res = await fetch(`http://www.omdbapi.com/?apikey=${apiKey}&i=${selectedID}`);
@@ -274,6 +297,18 @@ function MovieDetails({ selectedID, onCloseDetails, onAddWatched, watched }) {
       getMovieDetails();
     },
     [selectedID]
+  );
+
+  useEffect(
+    function () {
+      if (!title) return;
+      document.title = `Movie | ${title}`;
+
+      return function () {
+        document.title = 'usePopcorn';
+      };
+    },
+    [title]
   );
 
   return (
